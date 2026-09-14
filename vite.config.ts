@@ -74,6 +74,8 @@ export default defineConfig({
     globals: false,
     css: false,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    // Application tests sit next to the code; scripts/ holds the suites that cover
+    // repository configuration (the raw-HTML lint ban, workflow action pinning).
+    include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
   },
 });

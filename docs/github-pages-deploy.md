@@ -3,7 +3,8 @@
 The workflow below is **not in the repository**: the change set that produced this file is
 not permitted to write under `.github/`. A maintainer has to commit it as
 `.github/workflows/ci.yml` as part of this pull request — US-1's acceptance criteria name
-the five scripts as the merge condition, and every later story's gate depends on it.
+the five scripts as the merge condition, US-1's fourth criterion is only verifiable once
+the site is published, and every later story's gate depends on it.
 
 ## Before committing
 
@@ -14,6 +15,11 @@ action as the single realistic route to injecting code into the published site:
 ```sh
 gh api repos/actions/checkout/git/ref/tags/v4 --jq .object.sha
 ```
+
+This is no longer a step that can be quietly skipped: `scripts/workflow-pins.test.ts` reads
+every file under `.github/workflows/` and fails `npm run test` if any third-party `uses:`
+names anything other than a 40-character commit SHA. The check is inert while no workflow
+exists and starts enforcing the moment one is committed.
 
 ## `.github/workflows/ci.yml`
 
@@ -82,6 +88,9 @@ Notes:
 - `VITE_BASE_PATH` is set on the whole `build` job, so the build, the Playwright preview
   server and the sub-path assertions in `e2e/sub-path.spec.ts` all use
   `/visit-pakistan/` — the shape that is actually published.
+- The `npx playwright install --with-deps chromium` step is kept for the operating-system
+  libraries. `npm run e2e` installs the browser binary itself, so the step is only about
+  the shared libraries Chromium links against on a bare runner.
 - `npm run e2e` builds again inside its own web server (see `playwright.config.ts`), which
   is a few seconds of duplicated work. The explicit `npm run build` step is kept because
   the Pages artifact is uploaded from `dist/` and because the story requires the script to
@@ -100,4 +109,4 @@ Notes:
 
 Once the workflow is in place, the deployed site is
 https://rashidwaseemmtp.github.io/visit-pakistan/ and US-1's fourth acceptance criterion
-can be verified against it.
+can be verified against it. Until then that criterion is unmet, not deferred.

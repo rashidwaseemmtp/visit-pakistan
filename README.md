@@ -14,15 +14,27 @@ GitHub Pages under the `/visit-pakistan/` sub-path.
 | `npm run test` | Vitest, single run |
 | `npm run build` | Validates `data/destinations.json`, then builds into `dist/` |
 | `npm run preview` | Serves `dist/` on port 4173 |
-| `npm run e2e` | Playwright; its web server builds the site itself |
+| `npm run e2e` | Installs the Chromium binary if needed, then runs Playwright |
 
-The five scripts are independent: `npm run e2e` no longer needs a previous `npm run build`,
-because `playwright.config.ts` runs `npm run build && npm run preview` as its web server.
-That also guarantees the `dist/` under test was built with the same `VITE_BASE_PATH` the
-suite points at.
+The five scripts named by US-1 are independent and each exits 0 on a checkout with
+dependencies installed:
+
+- `npm run e2e` installs its own browser (`playwright install chromium`), because `npm ci`
+  installs `@playwright/test` but not the binaries it drives.
+- `npm run e2e` also builds the site itself: `playwright.config.ts` runs
+  `npm run build && npm run preview` as its web server, so no previous `npm run build` is
+  needed and `dist/` always matches the `VITE_BASE_PATH` the suite points at.
+- On a bare Linux machine or container the browser may still need OS libraries. CI runs
+  `npx playwright install --with-deps chromium` for that; locally, run the same command
+  once (it needs sudo) if Chromium fails to launch.
 
 Build for GitHub Pages with `VITE_BASE_PATH=/visit-pakistan/ npm run build`, and exercise
 the deployed shape with `VITE_BASE_PATH=/visit-pakistan/ npm run e2e`.
+
+Unit tests sit next to the code under `src/`. Two suites under `scripts/` cover repository
+configuration rather than a module: `eslint-no-raw-html.test.ts` proves the lint ban on
+raw-HTML rendering, and `workflow-pins.test.ts` fails if a committed GitHub Actions
+workflow references a third-party action by mutable tag instead of a commit SHA.
 
 ## Routing and the not-found page
 
@@ -40,6 +52,15 @@ carries the base path, that the list resolves on direct entry, that an unknown p
 the not-found page, that the base path resolves without a trailing slash, and that the page
 makes no off-origin request.
 
+## Without JavaScript
+
+The destinations are rendered in the browser, so the page has no content before the bundle
+executes. `index.html` carries a `<noscript>` block stating that the site needs JavaScript,
+so a visitor whose script is blocked or fails to load sees a stated message rather than a
+blank document (`e2e/no-javascript.spec.ts` loads the built site with JavaScript disabled
+and asserts it). This is a floor, not a fix: the content itself remains unavailable, which
+is the cost of the architecture deviation recorded below.
+
 ## Content
 
 `data/destinations.json` is the only source of destination content. It is validated by
@@ -55,9 +76,11 @@ the Zod issue paths go to the browser console, not onto the page.
 
 **Outstanding:** the client has supplied destination *names* only. Province, category,
 best season, attractions and travel information are not present in the file and have not
-been invented. Add them to `data/destinations.json` and they render with no code change —
-the schema already treats them as optional and the components already display province
-and category when present.
+been invented. US-1's second acceptance criterion (name, province and category rendered
+character-for-character) is therefore **satisfied in code and unverifiable in data**: the
+schema treats those fields as optional, `DestinationCard` renders them when present and
+omits them entirely when absent, and unit tests cover both. Add the values to
+`data/destinations.json` and they render with no code change.
 
 ## Architecture
 
@@ -74,4 +97,5 @@ The GitHub Actions workflow (quality gate on pull requests, Pages deploy from `m
 write under `.github/`. The complete workflow, the action-pinning instruction and the
 repository settings a maintainer must apply are in
 [`docs/github-pages-deploy.md`](docs/github-pages-deploy.md) and need to be committed as
-part of this pull request.
+part of this pull request. Once it is committed, `npm run test` checks that every
+third-party action in it is pinned to a full commit SHA.

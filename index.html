@@ -9,6 +9,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      The approved architecture renders the destinations into the HTML at build time; this
+      repository is a client-rendered single-page application (docs/architecture-deviation-spa.md).
+      Until that deviation is settled, this is the floor: a stated message rather than a blank
+      document when the bundle is blocked or fails to load. It does not recover the content.
+    -->
+    <noscript>
+      <div class="noscript">
+        <h1 class="noscript__title">Visit Pakistan needs JavaScript</h1>
+        <p class="noscript__body">
+          The destination list is built in your browser, so it cannot be shown while JavaScript is
+          turned off or has failed to load. Please turn JavaScript on and reload the page.
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

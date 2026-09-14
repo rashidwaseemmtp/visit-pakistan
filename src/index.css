@@ -65,6 +65,26 @@ body {
   transform: translateY(0);
 }
 
+/* Rendered only when JavaScript is unavailable; see the <noscript> block in index.html. */
+.noscript {
+  width: 100%;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md) var(--space-xl);
+}
+
+.noscript__title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.noscript__body {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--colour-ink-muted);
+}
+
 .site-header {
   border-bottom: 1px solid var(--colour-border);
   background-color: var(--colour-surface);

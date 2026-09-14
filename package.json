@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test",
+    "e2e": "playwright install chromium && playwright test",
     "validate:content": "tsx scripts/validate-content.ts",
     "build": "npm run validate:content && vite build",
     "preview": "vite preview"
