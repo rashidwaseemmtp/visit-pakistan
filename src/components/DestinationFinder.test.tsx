@@ -1,0 +1,1 @@
+Full content is in the changes[] entry for src/components/DestinationFinder.test.tsx.

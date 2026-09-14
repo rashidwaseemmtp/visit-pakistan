@@ -103,11 +103,50 @@ the schema treats those fields as optional, `DestinationCard` renders them when 
 and omits them entirely when absent, and unit tests cover both. Add the values to
 `data/destinations.json` and they render with no code change.
 
-**QA handover:** do not close AC 2 as met — there is no live instance of a province or a
-category on the page — and do not raise it as a defect, because the missing values are
-absent from the client's content file and REQ-019 forbids inventing them. Track it as
-blocked on client content. When the fuller file arrives, the strict schema above turns a
-mis-named field into a build failure rather than a silently blank card.
+US-2's province and category filters read the same two fields, so they are blocked by the
+same gap. With no values in the file neither filter is rendered at all — an empty select
+would be a dead control — while the search, the result count, the empty state and the
+clear control are fully live. The filter mechanics are unit-tested against fixture data in
+`src/content/filters.test.ts` and `src/components/DestinationFinder.test.tsx`, and the two
+filter tests in `e2e/destination-search.spec.ts` skip themselves with a stated reason until
+the values arrive, at which point they start enforcing with no code change.
+
+**QA handover:** do not close US-1 AC 2, or US-2's province and category criteria, as met —
+there is no live instance of a province or a category on the page — and do not raise them
+as defects, because the values are absent from the client's content file and REQ-019
+forbids inventing them. Track them as blocked on client content. When the fuller file
+arrives, the strict schema above turns a mis-named field into a build failure rather than a
+silently blank card or a missing filter.
+
+## Search and filters
+
+The list is narrowed by a free-text search and two filters — province and category —
+combined with AND: a destination is shown only if it satisfies every active criterion. The
+rules live in `src/content/filters.ts`; `src/components/DestinationFinder.tsx` owns the
+state, the controls and the empty state, and hands the survivors to `DestinationList`.
+
+- Search covers the **destination name only** (`SEARCHABLE_FIELDS` in
+  `src/content/filters.ts`). Whether the client expects search over attractions and travel
+  information is an open question on the architecture baseline; widening it is an entry in
+  that list plus a test.
+- Matching is a literal, case-insensitive, whitespace-trimmed substring test and never a
+  regular expression, so `.*`, `(` or `<b>` are searched for as text — and, like all
+  content, rendered as text.
+- Filter options are derived from the values present in `data/destinations.json` and are
+  never hard-coded. A value held by a single destination is still offered. A field the file
+  carries no values for renders no filter at all.
+- The result count sits in a `role="status"` live region, so a change in the number of
+  matches is announced; each control has a `<label>` associated by `htmlFor`.
+- When nothing matches, the list is replaced by an empty state that names each active
+  criterion and offers a clear control. Clearing empties the search field, returns both
+  filters to their unfiltered option and moves focus to the search field — the clear
+  control itself unmounts once there is nothing left to clear, so focus is placed
+  deliberately rather than dropped on the document.
+- Criteria are component state. They are **not** retained across navigation to a details
+  page and back, and are not reflected in the URL. The story records this as an open
+  question and nothing in the requirements decides it; this is the smaller of the two
+  behaviours, and URL-reflected state is the change to make if the client wants a filtered
+  view to be shareable (it is cheaper to add now than after US-3).
 
 ## Architecture
 

@@ -131,6 +131,97 @@ body {
   color: var(--colour-ink-muted);
 }
 
+.destination-finder__controls {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  align-items: end;
+  margin: 0 0 var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface-raised);
+}
+
+.destination-finder__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  /* Without this a several-hundred-character search term would stretch the grid track. */
+  min-width: 0;
+}
+
+.destination-finder__label {
+  font-weight: 600;
+}
+
+.destination-finder__input,
+.destination-finder__select {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface);
+  color: var(--colour-ink);
+  font: inherit;
+}
+
+.destination-finder__clear {
+  justify-self: start;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--colour-brand);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface);
+  color: var(--colour-brand);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.destination-finder__clear:hover {
+  background-color: var(--colour-surface-raised);
+}
+
+.destination-finder__count {
+  margin: 0 0 var(--space-md);
+  color: var(--colour-ink-muted);
+}
+
+.destination-finder__empty {
+  padding: var(--space-md);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius);
+  background-color: var(--colour-surface-raised);
+}
+
+.destination-finder__empty-title {
+  margin: 0 0 var(--space-sm);
+  font-size: 1.25rem;
+}
+
+.destination-finder__empty-body {
+  margin: 0 0 var(--space-sm);
+}
+
+.destination-finder__criteria {
+  margin: 0 0 var(--space-md);
+  padding-left: var(--space-lg);
+}
+
+.destination-finder__criterion {
+  /* A search term the visitor pasted can be arbitrarily long and have no spaces in it. */
+  overflow-wrap: anywhere;
+}
+
+.destination-finder__criterion-label {
+  font-weight: 600;
+}
+
+.destination-finder__criterion-label::after {
+  content: ':';
+}
+
 .destination-list {
   display: grid;
   gap: var(--space-md);

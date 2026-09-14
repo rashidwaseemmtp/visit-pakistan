@@ -5,8 +5,12 @@ export type DestinationContent =
   | { readonly status: 'ok'; readonly destinations: readonly Destination[] }
   | { readonly status: 'error'; readonly detail: string };
 
-/** Locale-aware so a hyphen (Mohenjo-daro) or a non-ASCII letter sorts where a reader expects it. */
-const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+/**
+ * Locale-aware so a hyphen (Mohenjo-daro) or a non-ASCII letter sorts where a reader expects
+ * it. Shared with the filter option lists, so every content-derived ordering on the page is
+ * ordered the same way.
+ */
+export const collator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
 
 export function sortDestinationsByName(destinations: readonly Destination[]): Destination[] {
   return [...destinations].sort((a, b) => collator.compare(a.name, b.name));

@@ -1,0 +1,161 @@
+import { useMemo, useRef, useState } from 'react';
+import {
+  NO_CRITERIA,
+  collectFilterOptions,
+  describeActiveCriteria,
+  filterDestinations,
+  formatResultCount,
+  hasActiveCriteria,
+  type DestinationCriteria,
+} from '../content/filters';
+import type { Destination } from '../content/schema';
+import { DestinationList } from './DestinationList';
+
+interface DestinationFinderProps {
+  readonly destinations: readonly Destination[];
+}
+
+interface FacetFilterProps {
+  readonly id: string;
+  readonly label: string;
+  readonly unfilteredLabel: string;
+  readonly options: readonly string[];
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+}
+
+/**
+ * Options come from the values present in data/destinations.json. A field the content file
+ * carries no values for has nothing to offer, so its control is left out entirely — the same
+ * rule DestinationCard applies to an absent fact, rather than a dead, empty select.
+ */
+function FacetFilter({ id, label, unfilteredLabel, options, value, onChange }: FacetFilterProps) {
+  if (options.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="destination-finder__field">
+      <label className="destination-finder__label" htmlFor={id}>
+        {label}
+      </label>
+      <select
+        className="destination-finder__select"
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="">{unfilteredLabel}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export function DestinationFinder({ destinations }: DestinationFinderProps) {
+  const [criteria, setCriteria] = useState<DestinationCriteria>(NO_CRITERIA);
+  const searchField = useRef<HTMLInputElement>(null);
+
+  const provinces = useMemo(() => collectFilterOptions(destinations, 'province'), [destinations]);
+  const categories = useMemo(() => collectFilterOptions(destinations, 'category'), [destinations]);
+  const matching = useMemo(() => filterDestinations(destinations, criteria), [destinations, criteria]);
+
+  function update(change: Partial<DestinationCriteria>) {
+    setCriteria((current) => ({ ...current, ...change }));
+  }
+
+  function clearCriteria() {
+    setCriteria(NO_CRITERIA);
+    // The clear control unmounts once there is nothing left to clear, so focus is moved
+    // deliberately rather than dropped onto the document.
+    searchField.current?.focus();
+  }
+
+  // Nothing to search: the list states the content-level empty case on its own.
+  if (destinations.length === 0) {
+    return <DestinationList destinations={destinations} />;
+  }
+
+  const activeCriteria = describeActiveCriteria(criteria);
+  const canClear = hasActiveCriteria(criteria);
+  const clearControl = (
+    <button className="destination-finder__clear" type="button" onClick={clearCriteria}>
+      Clear search and filters
+    </button>
+  );
+
+  return (
+    <div className="destination-finder">
+      {/* Nothing is submitted: filtering happens as the visitor types, and the site's CSP
+          sets form-action 'none'. The form element is here for the search landmark. */}
+      <form
+        className="destination-finder__controls"
+        role="search"
+        aria-label="Search and filter destinations"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <div className="destination-finder__field">
+          <label className="destination-finder__label" htmlFor="destination-search">
+            Search destinations
+          </label>
+          <input
+            className="destination-finder__input"
+            id="destination-search"
+            type="search"
+            autoComplete="off"
+            ref={searchField}
+            value={criteria.searchTerm}
+            onChange={(event) => update({ searchTerm: event.target.value })}
+          />
+        </div>
+        <FacetFilter
+          id="destination-province"
+          label="Province"
+          unfilteredLabel="All provinces"
+          options={provinces}
+          value={criteria.province}
+          onChange={(province) => update({ province })}
+        />
+        <FacetFilter
+          id="destination-category"
+          label="Category"
+          unfilteredLabel="All categories"
+          options={categories}
+          value={criteria.category}
+          onChange={(category) => update({ category })}
+        />
+        {canClear && matching.length > 0 ? clearControl : null}
+      </form>
+
+      {/* role="status" is an implicit polite live region, so a change in the number of
+          results is announced without moving focus. */}
+      <p className="destination-finder__count" role="status">
+        {formatResultCount(matching.length, destinations.length)}
+      </p>
+
+      {matching.length === 0 ? (
+        <div className="destination-finder__empty">
+          <h2 className="destination-finder__empty-title">No destinations match</h2>
+          <p className="destination-finder__empty-body">
+            No destination matches all of these at once:
+          </p>
+          <ul className="destination-finder__criteria">
+            {activeCriteria.map((criterion) => (
+              <li className="destination-finder__criterion" key={criterion.label}>
+                <span className="destination-finder__criterion-label">{criterion.label}</span>{' '}
+                <span className="destination-finder__criterion-value">{criterion.value}</span>
+              </li>
+            ))}
+          </ul>
+          {clearControl}
+        </div>
+      ) : (
+        <DestinationList destinations={matching} />
+      )}
+    </div>
+  );
+}
