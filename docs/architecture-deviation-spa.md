@@ -1,9 +1,11 @@
 # Architecture deviation: Vite + React Router SPA instead of Astro 5 islands
 
-**Status:** proposed — needs a decision from the architecture owner (Rashid Waseem).
-This pull request should not merge until that decision is recorded: US-2 and US-3 both
-build directly on the shape chosen here.
-**Raised by:** US-1 code review, round 1 (CRITICAL), restated in round 2 (HIGH).
+**Status:** open — proposed, and still undecided by the architecture owner (Rashid Waseem).
+Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH).
+No change to this repository can close it: the two options below are a choice between
+toolchains, and the same choice has to settle the repository contract quoted under *Why it
+was not ported*. This pull request should not merge until that decision is recorded: US-2
+and US-3 both build directly on the shape chosen here.
 
 ## The approved baseline
 
@@ -35,8 +37,8 @@ deviation, and pay the SPA's known costs now rather than discovering them in US-
 
 | Property the baseline relied on | Status here | Mitigation in this change |
 | --- | --- | --- |
-| One real HTML file per route, content in the markup | Lost. The served HTML is a shell. | None. Content fidelity is still enforced: `data/destinations.json` is the only source, Zod-validated by `npm run validate:content` during `npm run build` and again on load. |
-| Direct entry and refresh under `/visit-pakistan/` | Preserved | The build emits `dist/404.html` as a copy of `dist/index.html`. GitHub Pages serves it for any unmatched address, so the app boots on the requested URL with no redirect shim and no URL rewriting. Covered by `e2e/sub-path.spec.ts`. |
+| One real HTML file per route, content in the markup | Lost. The served HTML is a shell. | None. Content fidelity is still enforced: `data/destinations.json` is the only source, Zod-validated by `npm run validate:content` during `npm run build` and again on load, against a strict schema that fails the build on an unrecognised key rather than dropping it. |
+| Direct entry and refresh under `/visit-pakistan/` | Preserved | The build emits `dist/404.html` as a copy of `dist/index.html`. GitHub Pages serves it for any unmatched address, so the app boots on the requested URL with no redirect shim and no URL rewriting. `e2e/sub-path.spec.ts` now proves this against a static server that reproduces Pages' behaviour — 404.html with a 404 status, bare sub-path redirected — rather than against `vite preview`, whose SPA fallback would pass either way. |
 | Pages readable with JavaScript disabled or failed | **Lost.** The destinations cannot be read without JavaScript. | Partial only: `index.html` now carries a `<noscript>` block stating that the site needs JavaScript, so a failed or blocked bundle shows a stated message instead of a blank document (`e2e/no-javascript.spec.ts`). This raises the floor; it does not restore the property, and it does not restore the baseline's cheapest route to WCAG AA. **This remains the deviation's real cost and the reason it needs ratifying.** |
 | A real 404 status for unknown paths | Unchanged | Still 404, because Pages serves 404.html. The status was never ours to control. |
 | Cross-island state via nanostores (US-6) | Not needed | One React root, so the favourites store can be a plain module with React state over `localStorage`, keeping the storage key `visit-pakistan:favourites:v1` and the validate-on-read behaviour the baseline specifies. |

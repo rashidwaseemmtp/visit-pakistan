@@ -47,10 +47,21 @@ the destination URLs US-3 adds will resolve on direct entry and on refresh. The 
 status for those pages is 404 and GitHub Pages does not let us change it; that is a
 platform property, not an application behaviour.
 
-`e2e/sub-path.spec.ts` asserts the emitted `404.html`, that every URL in the built HTML
-carries the base path, that the list resolves on direct entry, that an unknown path shows
-the not-found page, that the base path resolves without a trailing slash, and that the page
-makes no off-origin request.
+`e2e/sub-path.spec.ts` covers this in two layers, because they prove different things:
+
+- Against `npm run preview` it asserts the emitted `404.html`, that every URL in the built
+  HTML is root-relative and carries the base path, that the list resolves on direct entry,
+  that the router renders the not-found page, that the base path resolves without a
+  trailing slash, and that the page makes no off-origin request. `vite preview` has SPA
+  history fallback, so these assertions exercise the application, not the host — and the
+  base-path assertion is skipped when `VITE_BASE_PATH` is unset, because with the default
+  base every root-relative URL starts with `/` and the check would be vacuous.
+- Against a small static server that reproduces GitHub Pages' behaviour over the real
+  `dist/` — unmatched addresses answered with `404.html` and a **404 status**, the bare
+  sub-path redirected to its trailing-slash form — it asserts direct entry, that an unknown
+  path really is answered by our own not-found page rather than by the dev server's
+  fallback, that the address is not rewritten, and that `…/visit-pakistan` resolves. This
+  is the layer that would fail if the `not-found-fallback` plugin were removed.
 
 ## Without JavaScript
 
@@ -68,19 +79,35 @@ the Zod schema in `src/content/schema.ts` at build time (`npm run validate:conte
 which `npm run build` runs first) and again when the app loads it, and the build fails
 unless the file holds exactly the eight agreed destinations.
 
+The schema is **strict**. A key it does not name — `best_season` for `bestSeason`,
+`region` for `province`, `travel_information` for `travelInformation` — fails
+`npm run build` with the offending key and the destination's index in the message, rather
+than being dropped so quietly that the page looks as though the client supplied nothing
+for that field. Optional fields stay optional: a record that genuinely omits one renders
+without it, with no empty label and no placeholder.
+
 Because the file is bundled at build time, a malformed or missing content file fails
 `npm run build` rather than producing a runtime error page. The runtime error state still
 exists and is unit-tested (`src/pages/HomePage.test.tsx`), but the build check is where a
 bad content file is actually caught. The error state states the problem in generic terms;
 the Zod issue paths go to the browser console, not onto the page.
 
-**Outstanding:** the client has supplied destination *names* only. Province, category,
-best season, attractions and travel information are not present in the file and have not
-been invented. US-1's second acceptance criterion (name, province and category rendered
-character-for-character) is therefore **satisfied in code and unverifiable in data**: the
-schema treats those fields as optional, `DestinationCard` renders them when present and
-omits them entirely when absent, and unit tests cover both. Add the values to
+### Outstanding, and what QA should do with it
+
+The client has supplied destination *names* only. Province, category, best season,
+attractions and travel information are not present in the file and have not been invented.
+
+US-1's second acceptance criterion (name, province and category rendered
+character-for-character) is therefore **satisfied in code and unverifiable in data**:
+the schema treats those fields as optional, `DestinationCard` renders them when present
+and omits them entirely when absent, and unit tests cover both. Add the values to
 `data/destinations.json` and they render with no code change.
+
+**QA handover:** do not close AC 2 as met — there is no live instance of a province or a
+category on the page — and do not raise it as a defect, because the missing values are
+absent from the client's content file and REQ-019 forbids inventing them. Track it as
+blocked on client content. When the fuller file arrives, the strict schema above turns a
+mis-named field into a build failure rather than a silently blank card.
 
 ## Architecture
 
