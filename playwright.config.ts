@@ -13,10 +13,11 @@ export default defineConfig({
   use: { baseURL: previewUrl, trace: 'on-first-retry' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    // Serves dist/, so `npm run build` must run first.
-    command: 'npm run preview',
+    // Builds before serving, so `npm run e2e` exits 0 on a clean checkout whatever order
+    // the five scripts are run in, and so dist/ always matches VITE_BASE_PATH.
+    command: 'npm run build && npm run preview',
     url: previewUrl,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 });

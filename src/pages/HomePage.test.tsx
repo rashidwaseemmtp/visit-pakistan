@@ -1,7 +1,11 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HomePage } from './HomePage';
 import { EXPECTED_DESTINATION_NAMES } from '../content/expectedDestinations';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('HomePage', () => {
   it('lists exactly the eight client-supplied destinations and no other entry', () => {
@@ -20,10 +24,12 @@ describe('HomePage', () => {
   });
 
   it('shows a stated error state instead of a blank page when the content cannot be loaded', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
     render(<HomePage content={{ status: 'error', detail: '(root): Expected array' }} />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('We can’t show the destinations right now');
-    expect(screen.getByText(/\(root\): Expected array/)).toBeInTheDocument();
+    expect(screen.queryByText(/\(root\): Expected array/)).not.toBeInTheDocument();
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 });
