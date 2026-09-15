@@ -33,6 +33,11 @@ function categoryFilter(): HTMLElement {
   return screen.getByLabelText('Category');
 }
 
+/** The sentence above the controls, which must promise only the controls that are rendered. */
+function hint(): string {
+  return screen.getByText(/^Search the list by destination name/).textContent ?? '';
+}
+
 function search(term: string) {
   fireEvent.change(searchField(), { target: { value: term } });
 }
@@ -275,6 +280,33 @@ describe('DestinationFinder', () => {
     expect(namedCriteria()).toEqual([`Search ${term}`]);
   });
 
+  it('names both filters in the copy when the content file carries both', () => {
+    renderFinder();
+
+    expect(hint()).toBe(
+      'Search the list by destination name, or narrow it by province and category.',
+    );
+  });
+
+  it('names only the filter the content file carries values for', () => {
+    renderFinder([
+      { slug: 'north-valley', name: 'North Valley', province: 'Northern' },
+      { slug: 'east-city', name: 'East City', province: 'Eastern' },
+    ]);
+
+    expect(hint()).toBe('Search the list by destination name, or narrow it by province.');
+    expect(screen.queryByLabelText('Category')).not.toBeInTheDocument();
+  });
+
+  it('promises no filter at all when the content file carries neither', () => {
+    renderFinder([
+      { slug: 'one', name: 'One' },
+      { slug: 'two', name: 'Two' },
+    ]);
+
+    expect(hint()).toBe('Search the list by destination name.');
+  });
+
   it('leaves out a filter the content file carries no values for', () => {
     renderFinder([
       { slug: 'one', name: 'One' },
@@ -290,6 +322,7 @@ describe('DestinationFinder', () => {
     renderFinder([]);
 
     expect(screen.queryByLabelText('Search destinations')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Search the list by destination name/)).not.toBeInTheDocument();
     expect(screen.getByText('There are no destinations to show at the moment.')).toBeInTheDocument();
   });
 });

@@ -94,6 +94,26 @@ export function collectFilterOptions(
   return [...values].sort((a, b) => collator.compare(a, b));
 }
 
+/**
+ * The sentence above the controls. It names only the facets that are actually offered, so
+ * the copy cannot tell a visitor to narrow by a filter the page does not render: a field
+ * data/destinations.json carries no values for has no control and gets no mention. Driven
+ * by the same option lists as the controls themselves, so it corrects itself when the
+ * client's fuller content file arrives.
+ */
+export function describeAvailableControls(facets: readonly string[]): string {
+  if (facets.length === 0) {
+    return 'Search the list by destination name.';
+  }
+
+  const named =
+    facets.length === 1
+      ? facets[0]
+      : `${facets.slice(0, -1).join(', ')} and ${facets[facets.length - 1]}`;
+
+  return `Search the list by destination name, or narrow it by ${named}.`;
+}
+
 /** Is there anything for the clear control to clear? Typed-but-blank counts: the field is not empty. */
 export function hasActiveCriteria(criteria: DestinationCriteria): boolean {
   return criteria.searchTerm !== '' || criteria.province !== '' || criteria.category !== '';

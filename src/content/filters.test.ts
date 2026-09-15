@@ -4,6 +4,7 @@ import {
   SEARCHABLE_FIELDS,
   collectFilterOptions,
   describeActiveCriteria,
+  describeAvailableControls,
   filterDestinations,
   formatResultCount,
   hasActiveCriteria,
@@ -165,6 +166,27 @@ describe('collectFilterOptions', () => {
 
     expect(collectFilterOptions(nameOnly, 'province')).toEqual([]);
     expect(collectFilterOptions(nameOnly, 'category')).toEqual([]);
+  });
+});
+
+describe('describeAvailableControls', () => {
+  it('promises the search alone when no filter is offered', () => {
+    expect(describeAvailableControls([])).toBe('Search the list by destination name.');
+  });
+
+  it('names the one filter that is offered, and no other', () => {
+    expect(describeAvailableControls(['province'])).toBe(
+      'Search the list by destination name, or narrow it by province.',
+    );
+    expect(describeAvailableControls(['category'])).toBe(
+      'Search the list by destination name, or narrow it by category.',
+    );
+  });
+
+  it('names both filters when both are offered', () => {
+    expect(describeAvailableControls(['province', 'category'])).toBe(
+      'Search the list by destination name, or narrow it by province and category.',
+    );
   });
 });
 

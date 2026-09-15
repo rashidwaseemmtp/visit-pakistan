@@ -107,10 +107,13 @@ and omits them entirely when absent, and unit tests cover both. Add the values t
 US-2's province and category filters read the same two fields, so they are blocked by the
 same gap. With no values in the file neither filter is rendered at all — an empty select
 would be a dead control — while the search, the result count, the empty state and the
-clear control are fully live. The filter mechanics are unit-tested against fixture data in
-`src/content/filters.test.ts` and `src/components/DestinationFinder.test.tsx`, and the two
-filter tests in `e2e/destination-search.spec.ts` skip themselves with a stated reason until
-the values arrive, at which point they start enforcing with no code change.
+clear control are fully live. The page copy does not promise them either: the sentence
+above the controls names only the filters that are actually offered (see *Search and
+filters* below), so the page reads as complete rather than broken. The filter mechanics
+are unit-tested against fixture data in `src/content/filters.test.ts` and
+`src/components/DestinationFinder.test.tsx`, and the two filter tests in
+`e2e/destination-search.spec.ts` skip themselves with a stated reason until the values
+arrive, at which point they start enforcing with no code change.
 
 **QA handover:** do not close US-1 AC 2, or US-2's province and category criteria, as met —
 there is no live instance of a province or a category on the page — and do not raise them
@@ -136,6 +139,15 @@ state, the controls and the empty state, and hands the survivors to `Destination
 - Filter options are derived from the values present in `data/destinations.json` and are
   never hard-coded. A value held by a single destination is still offered. A field the file
   carries no values for renders no filter at all.
+- The copy above the controls promises only the controls that are rendered
+  (`describeAvailableControls` in `src/content/filters.ts`, fed by the same two option
+  lists that decide whether each control renders). With the content file as committed it
+  reads *Search the list by destination name.* and names no filter; when the province and
+  category values arrive it names them, with no code change. The page intro stays to what
+  is true whatever the content holds, so it is also correct above the content error state.
+  `DestinationFinder.test.tsx` pins all three shapes, `HomePage.test.tsx` asserts against
+  the real content file that a filter is named exactly when its control is present, and
+  `e2e/destination-search.spec.ts` asserts the same in the browser without self-skipping.
 - The result count sits in a `role="status"` live region, so a change in the number of
   matches is announced; each control has a `<label>` associated by `htmlFor`.
 - When nothing matches, the list is replaced by an empty state that names each active

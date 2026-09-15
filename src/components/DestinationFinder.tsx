@@ -3,6 +3,7 @@ import {
   NO_CRITERIA,
   collectFilterOptions,
   describeActiveCriteria,
+  describeAvailableControls,
   filterDestinations,
   formatResultCount,
   hasActiveCriteria,
@@ -85,6 +86,17 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
   const noMatches = matching.length === 0;
 
   /**
+   * The same two option lists that decide whether each FacetFilter renders also decide what
+   * the copy above the controls promises, so the page can never tell a visitor to narrow by
+   * a filter it does not show. With the content file as committed — names only — this reads
+   * "Search the list by destination name." and names no filter at all.
+   */
+  const availableFacets = [
+    provinces.length > 0 ? 'province' : undefined,
+    categories.length > 0 ? 'category' : undefined,
+  ].filter((facet): facet is string => facet !== undefined);
+
+  /**
    * One clear control, in one of two places, decided by one pair of flags: with the controls
    * while there are results, and inside the empty state when there are none, so the way out
    * sits with the message that explains why the list is empty. The two guards below read
@@ -101,6 +113,8 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
 
   return (
     <div className="destination-finder">
+      <p className="destination-finder__hint">{describeAvailableControls(availableFacets)}</p>
+
       {/* Nothing is submitted: filtering happens as the visitor types, and the site's CSP
           sets form-action 'none'. The form element is here for the search landmark. */}
       <form

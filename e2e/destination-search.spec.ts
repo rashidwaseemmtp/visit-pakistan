@@ -54,6 +54,30 @@ test.describe('searching and filtering the destination list', () => {
     );
   });
 
+  /**
+   * The copy above the controls must promise a filter exactly when that filter is rendered.
+   * Derived from the content file, so it holds both while province and category are absent
+   * — the page then names neither — and once the client supplies them. Deliberately does not
+   * self-skip: this is the one filter-related assertion that is meaningful today.
+   */
+  test('promises only the filters the content file actually carries', async ({ page }) => {
+    const hint = page.getByText(/^Search the list by destination name/);
+    await expect(hint).toBeVisible();
+    const copy = (await hint.textContent()) ?? '';
+
+    const facets = [
+      { label: 'Province', field: 'province' },
+      { label: 'Category', field: 'category' },
+    ] as const;
+
+    for (const { label, field } of facets) {
+      const offered = valuesOf(field).length > 0;
+
+      await expect(page.getByLabel(label)).toHaveCount(offered ? 1 : 0);
+      expect(copy.includes(field)).toBe(offered);
+    }
+  });
+
   test('shows only Hunza, and the number of matches, for the term “hun”', async ({ page }) => {
     await searchField(page).fill('hun');
 

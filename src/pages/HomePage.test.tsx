@@ -43,6 +43,33 @@ describe('HomePage', () => {
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
   });
 
+  it('describes the page without promising a control, so the copy survives the error state', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(<HomePage content={{ status: 'error', detail: '(root): Expected array' }} />);
+
+    expect(screen.getByText('Every destination we cover, on one page.')).toBeInTheDocument();
+    expect(screen.queryByText(/^Search the list by destination name/)).not.toBeInTheDocument();
+  });
+
+  /**
+   * Against the client's real content file rather than a fixture: a filter must be named in
+   * the copy exactly when its control is on the page. data/destinations.json carries names
+   * only today, so both sides are false; when the province and category values arrive both
+   * sides become true with no change here.
+   */
+  it('promises only the filter controls the client content file actually supports', () => {
+    render(<HomePage />);
+
+    const hint = screen.getByText(/^Search the list by destination name/).textContent ?? '';
+
+    for (const facet of ['Province', 'Category'] as const) {
+      const offered = screen.queryByLabelText(facet) !== null;
+
+      expect(hint.includes(facet.toLowerCase())).toBe(offered);
+    }
+  });
+
   it('shows only Hunza, and states the number of matches, when the visitor types “hun”', () => {
     render(<HomePage />);
 

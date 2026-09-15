@@ -131,6 +131,13 @@ body {
   color: var(--colour-ink-muted);
 }
 
+/* The sentence naming the controls that are actually rendered; see DestinationFinder. */
+.destination-finder__hint {
+  max-width: 60ch;
+  margin: 0 0 var(--space-md);
+  color: var(--colour-ink-muted);
+}
+
 .destination-finder__controls {
   display: grid;
   gap: var(--space-md);

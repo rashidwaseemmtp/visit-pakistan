@@ -2,8 +2,8 @@
 
 **Status:** open — proposed, and still undecided by the architecture owner (Rashid Waseem).
 Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH), and
-again by US-2 code review round 1 (HIGH). No change to this repository can close it: the two
-options below are a choice between toolchains, and the same choice has to settle the
+again by US-2 code review rounds 1 and 2 (HIGH). No change to this repository can close it:
+the two options below are a choice between toolchains, and the same choice has to settle the
 repository contract quoted under *Why it was not ported*. This pull request should not merge
 until that decision is recorded: US-2 and US-3 both build directly on the shape chosen here.
 
