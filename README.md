@@ -148,8 +148,18 @@ state, the controls and the empty state, and hands the survivors to `Destination
   `DestinationFinder.test.tsx` pins all three shapes, `HomePage.test.tsx` asserts against
   the real content file that a filter is named exactly when its control is present, and
   `e2e/destination-search.spec.ts` asserts the same in the browser without self-skipping.
-- The result count sits in a `role="status"` live region, so a change in the number of
-  matches is announced; each control has a `<label>` associated by `htmlFor`.
+- The count is in two places, on purpose. The **visible** sentence
+  (`.destination-finder__count`) changes with every keystroke. The **announced** one is a
+  separate visually hidden `role="status"` region whose text settles on a trailing timer
+  (`ANNOUNCEMENT_DELAY_MS`, 450 ms, in `src/components/DestinationFinder.tsx`): a polite
+  live region that re-renders per keystroke queues one announcement per character in NVDA
+  and VoiceOver, so a visitor typing *hunza* hears a backlog trailing their typing.
+  Settling the announcement collapses that to one announcement per pause without slowing
+  what is on screen. The region is clipped, not `display: none`, so it stays in the
+  accessibility tree. `DestinationFinder.test.tsx` pins both halves — the visible sentence
+  changing immediately, the announced one skipping the counts in between — and
+  `e2e/destination-search.spec.ts` asserts the same in the browser.
+- Each control has a `<label>` associated by `htmlFor`.
 - When nothing matches, the list is replaced by an empty state that names each active
   criterion and offers a clear control. Exactly one clear control is on the page whenever
   there is anything to clear — with the controls while there are results, and inside the

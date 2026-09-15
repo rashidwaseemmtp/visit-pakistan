@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   NO_CRITERIA,
   collectFilterOptions,
@@ -12,6 +12,14 @@ import {
 import type { Destination } from '../content/schema';
 import { DestinationList } from './DestinationList';
 
+/**
+ * How far the announced count trails the visible one. Long enough that typing "hunza"
+ * produces one announcement rather than five queued behind the typing, short enough that
+ * the count is still spoken while the list is the subject. Exported for the test that
+ * pins the behaviour.
+ */
+export const ANNOUNCEMENT_DELAY_MS = 450;
+
 interface DestinationFinderProps {
   readonly destinations: readonly Destination[];
 }
@@ -23,6 +31,24 @@ interface FacetFilterProps {
   readonly options: readonly string[];
   readonly value: string;
   readonly onChange: (value: string) => void;
+}
+
+/**
+ * The sentence assistive technology is given, held one step behind the visible one. A polite
+ * live region that re-renders on every keystroke queues one announcement per character in
+ * NVDA and VoiceOver, so the visitor hears a backlog trailing their typing; a trailing timer
+ * collapses that to one announcement per pause. The visible count is not delayed.
+ */
+function useSettledAnnouncement(message: string, delayMs: number): string {
+  const [announced, setAnnounced] = useState(message);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnnounced(message), delayMs);
+
+    return () => clearTimeout(timer);
+  }, [message, delayMs]);
+
+  return announced;
 }
 
 /**
@@ -64,6 +90,9 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
   const provinces = useMemo(() => collectFilterOptions(destinations, 'province'), [destinations]);
   const categories = useMemo(() => collectFilterOptions(destinations, 'category'), [destinations]);
   const matching = useMemo(() => filterDestinations(destinations, criteria), [destinations, criteria]);
+
+  const resultCount = formatResultCount(matching.length, destinations.length);
+  const announcedCount = useSettledAnnouncement(resultCount, ANNOUNCEMENT_DELAY_MS);
 
   function update(change: Partial<DestinationCriteria>) {
     setCriteria((current) => ({ ...current, ...change }));
@@ -156,10 +185,14 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
         {canClear && !noMatches ? clearControl : null}
       </form>
 
-      {/* role="status" is an implicit polite live region, so a change in the number of
-          results is announced without moving focus. */}
-      <p className="destination-finder__count" role="status">
-        {formatResultCount(matching.length, destinations.length)}
+      {/* Seen, not announced: this sentence changes with every keystroke. */}
+      <p className="destination-finder__count">{resultCount}</p>
+
+      {/* Announced, not seen: role="status" is an implicit polite live region, and its text
+          settles ANNOUNCEMENT_DELAY_MS after the last change, so a visitor typing a word
+          hears the count they stopped on rather than one announcement per character. */}
+      <p className="visually-hidden" role="status">
+        {announcedCount}
       </p>
 
       {noMatches ? (

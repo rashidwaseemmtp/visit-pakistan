@@ -2,10 +2,11 @@
 
 **Status:** open — proposed, and still undecided by the architecture owner (Rashid Waseem).
 Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH), and
-again by US-2 code review rounds 1 and 2 (HIGH). No change to this repository can close it:
-the two options below are a choice between toolchains, and the same choice has to settle the
-repository contract quoted under *Why it was not ported*. This pull request should not merge
-until that decision is recorded: US-2 and US-3 both build directly on the shape chosen here.
+again by US-2 code review rounds 1, 2 and 3 (HIGH). No change to this repository can close
+it: the two options below are a choice between toolchains, and the same choice has to settle
+the repository contract quoted under *Why it was not ported*. This pull request should not
+merge until that decision is recorded: US-2 and US-3 both build directly on the shape chosen
+here.
 
 ## The approved baseline
 
@@ -52,10 +53,10 @@ in a hydrated island over destination data already present in the markup, so wha
 with JavaScript blocked now loses is not only the list but the search field and both
 filters — still only the `<noscript>` message. The filtering rules themselves
 (`src/content/filters.ts`) are framework-free and carry over unchanged to either option;
-what would be rewritten under option 2 is the component's state ownership and its island
-boundary, roughly 160 lines plus its test file. Each story that lands here adds a similar
-amount to option 2's cost, which is the reason the decision is worth making now rather than
-after US-3.
+what would be rewritten under option 2 is the component's state ownership, its island
+boundary and the settled live region that announces the result count — roughly 180 lines
+plus its test file. Each story that lands here adds a similar amount to option 2's cost,
+which is the reason the decision is worth making now rather than after US-3.
 
 ## Decision needed
 
