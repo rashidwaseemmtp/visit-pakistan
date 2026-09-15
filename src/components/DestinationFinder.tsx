@@ -143,7 +143,9 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
           <p className="destination-finder__empty-body">
             No destination matches all of these at once:
           </p>
-          <ul className="destination-finder__criteria">
+          {/* Named, so the criteria that produced the empty result are announced as a list
+              rather than as loose text after the message. */}
+          <ul className="destination-finder__criteria" aria-label="Active search and filter criteria">
             {activeCriteria.map((criterion) => (
               <li className="destination-finder__criterion" key={criterion.label}>
                 <span className="destination-finder__criterion-label">{criterion.label}</span>{' '}
