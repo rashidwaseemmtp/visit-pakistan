@@ -1,11 +1,12 @@
 # Architecture deviation: Vite + React Router SPA instead of Astro 5 islands
 
 **Status:** open — proposed, and still undecided by the architecture owner (Rashid Waseem).
-Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH).
-No change to this repository can close it: the two options below are a choice between
-toolchains, and the same choice has to settle the repository contract quoted under *Why it
-was not ported*. This pull request should not merge until that decision is recorded: US-2
-and US-3 both build directly on the shape chosen here.
+Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH), and
+again by US-2 code review rounds 1 to 4 (HIGH). No change to this repository can close
+it: the two options below are a choice between toolchains, and the same choice has to settle
+the repository contract quoted under *Why it was not ported*. This pull request should not
+merge until that decision is recorded: US-2 and US-3 both build directly on the shape chosen
+here.
 
 ## The approved baseline
 
@@ -44,6 +45,27 @@ deviation, and pay the SPA's known costs now rather than discovering them in US-
 | Cross-island state via nanostores (US-6) | Not needed | One React root, so the favourites store can be a plain module with React state over `localStorage`, keeping the storage key `visit-pakistan:favourites:v1` and the validate-on-read behaviour the baseline specifies. |
 | Shipped JavaScript budget | Larger than islands | Still a small bundle for an eight-record site; worth measuring against the 75 kB gzipped budget once US-2 to US-7 land. |
 
+## What US-2 added to the unratified shape
+
+Search and filters landed as `src/components/DestinationFinder.tsx`: a client-state React
+component filtering an array imported into the bundle. The baseline puts the same behaviour
+in a hydrated island over destination data already present in the markup, so what a visitor
+with JavaScript blocked now loses is not only the list but the search field and both
+filters — still only the `<noscript>` message. The filtering rules themselves
+(`src/content/filters.ts`) are framework-free and carry over unchanged to either option;
+what would be rewritten under option 2 is the component's state ownership, its island
+boundary and the settled live region that announces the result count — roughly 180 lines
+plus its test file. Each story that lands here adds a similar amount to option 2's cost,
+which is the reason the decision is worth making now rather than after US-3.
+
+The announcement is the clearest example of what re-homing would mean. The count now lives
+in two elements — a visible, `aria-hidden` paragraph that changes on every keystroke, and a
+visually hidden `role="status"` region holding the value settled on a 450 ms trailing timer
+— both owned by one component's state. Under the baseline the same behaviour spans an
+island boundary between markup rendered at build time and a hydrated control, so the timer,
+the hidden paragraph and the live region would have to be re-sited together rather than
+ported line for line.
+
 ## Decision needed
 
 1. **Ratify the SPA.** Amend the architecture baseline to record Vite + React Router, the
@@ -51,10 +73,10 @@ deviation, and pay the SPA's known costs now rather than discovering them in US-
    (with the `<noscript>` message as the accepted floor), and React state in place of
    nanostores. No further code change is needed here.
 2. **Reinstate Astro.** The content schema, the eight-slug build assertion, the validator
-   script, the layout, header, list and card components carry over largely unchanged; the
-   work is the Astro project setup, the route files, the island boundaries, and replacing
-   the Vite/Playwright wiring — and it must be accompanied by a matching change to the
-   repository contract, or the next change will drift straight back.
+   script, the filter rules, the layout, header, list and card components carry over largely
+   unchanged; the work is the Astro project setup, the route files, the island boundaries,
+   and replacing the Vite/Playwright wiring — and it must be accompanied by a matching
+   change to the repository contract, or the next change will drift straight back.
 
 Either way the same decision has to settle the repository contract quoted above, which
 currently mandates the toolchain the baseline rejects. Until one option is chosen, every

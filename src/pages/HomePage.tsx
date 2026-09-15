@@ -1,5 +1,5 @@
 import { ContentErrorState } from '../components/ContentErrorState';
-import { DestinationList } from '../components/DestinationList';
+import { DestinationFinder } from '../components/DestinationFinder';
 import { destinationContent, type DestinationContent } from '../content/destinations';
 
 interface HomePageProps {
@@ -11,9 +11,12 @@ export function HomePage({ content = destinationContent }: HomePageProps) {
   return (
     <div className="page">
       <h1 className="page__title">Destinations</h1>
+      {/* What the visitor can do with the list is described by DestinationFinder, which
+          knows which controls it actually renders; this intro stays true of the page even
+          when the content cannot be loaded at all. */}
       <p className="page__intro">Every destination we cover, on one page.</p>
       {content.status === 'ok' ? (
-        <DestinationList destinations={content.destinations} />
+        <DestinationFinder destinations={content.destinations} />
       ) : (
         <ContentErrorState detail={content.detail} />
       )}

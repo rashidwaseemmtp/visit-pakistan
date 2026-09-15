@@ -1,0 +1,1 @@
+See the full file returned under changes: src/components/DestinationFinder.test.tsx.

@@ -1,0 +1,1 @@
+Added as the `announces the result count through a live region once the typing settles` and `keeps the announced count out of the visible layout` specs in the file returned under changes; Playwright's retrying assertions cover the 450 ms settle.
