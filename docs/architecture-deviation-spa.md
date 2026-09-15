@@ -2,7 +2,7 @@
 
 **Status:** open — proposed, and still undecided by the architecture owner (Rashid Waseem).
 Raised by US-1 code review round 1 (CRITICAL) and restated in rounds 2, 3 and 4 (HIGH), and
-again by US-2 code review rounds 1, 2 and 3 (HIGH). No change to this repository can close
+again by US-2 code review rounds 1 to 4 (HIGH). No change to this repository can close
 it: the two options below are a choice between toolchains, and the same choice has to settle
 the repository contract quoted under *Why it was not ported*. This pull request should not
 merge until that decision is recorded: US-2 and US-3 both build directly on the shape chosen
@@ -57,6 +57,14 @@ what would be rewritten under option 2 is the component's state ownership, its i
 boundary and the settled live region that announces the result count — roughly 180 lines
 plus its test file. Each story that lands here adds a similar amount to option 2's cost,
 which is the reason the decision is worth making now rather than after US-3.
+
+The announcement is the clearest example of what re-homing would mean. The count now lives
+in two elements — a visible, `aria-hidden` paragraph that changes on every keystroke, and a
+visually hidden `role="status"` region holding the value settled on a 450 ms trailing timer
+— both owned by one component's state. Under the baseline the same behaviour spans an
+island boundary between markup rendered at build time and a hydrated control, so the timer,
+the hidden paragraph and the live region would have to be re-sited together rather than
+ported line for line.
 
 ## Decision needed
 

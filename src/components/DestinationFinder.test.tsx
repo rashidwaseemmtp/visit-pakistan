@@ -1,1 +1,1 @@
-Added as the `DestinationFinder, announcing the result count` describe block in the file returned under changes: fake timers plus `act()`; the total announced on first render; the visible sentence changing twice while the announcement stays put; 'n' → 'no' → 'north l' with sub-delay pauses announcing only "Showing 1 destination of 5."; the empty-state and restored-total announcements; and assertions that the live region carries `visually-hidden` while the visible count carries no role.
+See the full file returned under changes: src/components/DestinationFinder.test.tsx.

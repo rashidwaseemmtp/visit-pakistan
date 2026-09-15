@@ -159,6 +159,13 @@ state, the controls and the empty state, and hands the survivors to `Destination
   accessibility tree. `DestinationFinder.test.tsx` pins both halves — the visible sentence
   changing immediately, the announced one skipping the counts in between — and
   `e2e/destination-search.spec.ts` asserts the same in the browser.
+- Two places on screen, but **one** in the accessibility tree: the visible paragraph is
+  `aria-hidden="true"`, so someone arrowing through the page reads the count once rather
+  than twice in succession — and never reads the in-flight count next to the settled one
+  during the 450 ms window. The live region is the single accessible source because it
+  carries the settled value, and the hidden paragraph holds nothing focusable.
+  `DestinationFinder.test.tsx` asserts that exactly one accessible node carries the
+  sentence and that it is the `role="status"` region.
 - Each control has a `<label>` associated by `htmlFor`.
 - When nothing matches, the list is replaced by an empty state that names each active
   criterion and offers a clear control. Exactly one clear control is on the page whenever

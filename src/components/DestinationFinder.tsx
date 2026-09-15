@@ -185,8 +185,16 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
         {canClear && !noMatches ? clearControl : null}
       </form>
 
-      {/* Seen, not announced: this sentence changes with every keystroke. */}
-      <p className="destination-finder__count">{resultCount}</p>
+      {/* Seen, not announced. This sentence changes with every keystroke, and it is hidden
+          from assistive technology on purpose: the live region below carries the same words,
+          so leaving both in the accessibility tree would read the count twice in succession
+          to anyone arrowing through the page — and, during the settle, as two different
+          counts back to back. The live region is the single accessible source, because it is
+          the settled value and the one worth hearing. The element is not focusable, so
+          nothing operable is hidden with it. */}
+      <p className="destination-finder__count" aria-hidden="true">
+        {resultCount}
+      </p>
 
       {/* Announced, not seen: role="status" is an implicit polite live region, and its text
           settles ANNOUNCEMENT_DELAY_MS after the last change, so a visitor typing a word
