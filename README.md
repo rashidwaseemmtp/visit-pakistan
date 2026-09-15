@@ -70,7 +70,8 @@ executes. `index.html` carries a `<noscript>` block stating that the site needs 
 so a visitor whose script is blocked or fails to load sees a stated message rather than a
 blank document (`e2e/no-javascript.spec.ts` loads the built site with JavaScript disabled
 and asserts it). This is a floor, not a fix: the content itself remains unavailable, which
-is the cost of the architecture deviation recorded below.
+is the cost of the architecture deviation recorded below. Since US-2 the search field and
+both filters are in the same position — they are part of the same bundle.
 
 ## Content
 
@@ -138,10 +139,15 @@ state, the controls and the empty state, and hands the survivors to `Destination
 - The result count sits in a `role="status"` live region, so a change in the number of
   matches is announced; each control has a `<label>` associated by `htmlFor`.
 - When nothing matches, the list is replaced by an empty state that names each active
-  criterion and offers a clear control. Clearing empties the search field, returns both
-  filters to their unfiltered option and moves focus to the search field — the clear
-  control itself unmounts once there is nothing left to clear, so focus is placed
-  deliberately rather than dropped on the document.
+  criterion and offers a clear control. Exactly one clear control is on the page whenever
+  there is anything to clear — with the controls while there are results, and inside the
+  empty state when there are none, so the way out sits with the message that explains it.
+  The two render guards are the complementary halves of one pair of flags, and
+  `DestinationFinder.test.tsx` asserts the count in both branches and when no criterion is
+  active.
+- Clearing empties the search field, returns both filters to their unfiltered option and
+  moves focus to the search field — the control itself unmounts once there is nothing left
+  to clear, so focus is placed deliberately rather than dropped on the document.
 - Criteria are component state. They are **not** retained across navigation to a details
   page and back, and are not reflected in the URL. The story records this as an open
   question and nothing in the requirements decides it; this is the smaller of the two

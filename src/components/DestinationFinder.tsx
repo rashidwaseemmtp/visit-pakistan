@@ -82,6 +82,17 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
 
   const activeCriteria = describeActiveCriteria(criteria);
   const canClear = hasActiveCriteria(criteria);
+  const noMatches = matching.length === 0;
+
+  /**
+   * One clear control, in one of two places, decided by one pair of flags: with the controls
+   * while there are results, and inside the empty state when there are none, so the way out
+   * sits with the message that explains why the list is empty. The two guards below read
+   * `canClear && !noMatches` and `canClear && noMatches`, so they cannot both render it and
+   * cannot both skip it while a criterion is active. DestinationFinder.test.tsx asserts the
+   * count in both branches, and `noMatches` cannot occur with no criteria active — with none
+   * every destination matches, and the no-content case returned above.
+   */
   const clearControl = (
     <button className="destination-finder__clear" type="button" onClick={clearCriteria}>
       Clear search and filters
@@ -128,7 +139,7 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
           value={criteria.category}
           onChange={(category) => update({ category })}
         />
-        {canClear && matching.length > 0 ? clearControl : null}
+        {canClear && !noMatches ? clearControl : null}
       </form>
 
       {/* role="status" is an implicit polite live region, so a change in the number of
@@ -137,7 +148,7 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
         {formatResultCount(matching.length, destinations.length)}
       </p>
 
-      {matching.length === 0 ? (
+      {noMatches ? (
         <div className="destination-finder__empty">
           <h2 className="destination-finder__empty-title">No destinations match</h2>
           <p className="destination-finder__empty-body">
@@ -153,7 +164,7 @@ export function DestinationFinder({ destinations }: DestinationFinderProps) {
               </li>
             ))}
           </ul>
-          {clearControl}
+          {canClear ? clearControl : null}
         </div>
       ) : (
         <DestinationList destinations={matching} />

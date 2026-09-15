@@ -41,6 +41,11 @@ function select(control: HTMLElement, value: string) {
   fireEvent.change(control, { target: { value } });
 }
 
+/** Every clear control currently rendered: there must never be more than one. */
+function clearControls(): HTMLElement[] {
+  return screen.queryAllByRole('button', { name: 'Clear search and filters' });
+}
+
 function clear() {
   fireEvent.click(screen.getByRole('button', { name: 'Clear search and filters' }));
 }
@@ -215,6 +220,30 @@ describe('DestinationFinder', () => {
 
     expect(shownNames()).toHaveLength(destinations.length);
     expect(searchField()).toHaveFocus();
+  });
+
+  it('offers nothing to clear until a criterion is active', () => {
+    renderFinder();
+
+    expect(clearControls()).toHaveLength(0);
+  });
+
+  it('offers exactly one clear control, with the controls, while there are results', () => {
+    renderFinder();
+
+    search('valley');
+
+    expect(clearControls()).toHaveLength(1);
+    expect(clearControls()[0].closest('[role="search"]')).not.toBeNull();
+  });
+
+  it('offers exactly one clear control, inside the empty state, when nothing matches', () => {
+    renderFinder();
+
+    search('atlantis');
+
+    expect(clearControls()).toHaveLength(1);
+    expect(clearControls()[0].closest('.destination-finder__empty')).not.toBeNull();
   });
 
   it('announces the new result count through a live region', () => {
